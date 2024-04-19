@@ -1,8 +1,8 @@
-// const db = require("./db");
 const express = require("express");
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
+require('dotenv').config();
 
 const User = require("../model/userModel");
 const config = require("../config");
@@ -26,7 +26,6 @@ router.post("/register", (req, res) => {
         if(err) {
             console.log("error while registering")
         } 
-        console.log(result)
         res.send("registered successfully")
     }
 });
@@ -40,10 +39,9 @@ router.post("/login", (req, res) => {
             if(!passValid){
                 return res.send({auth: false, token: "Invalid credentials"});
             }
-            let token = jwt.sign({id: user._id}, config.secret, {
+            let token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {
                 expiresIn: 86400 // 24 hr == 86400sec
             })
-            console.log(passValid);
             res.send({auth: true, token: token});
         }
     });
@@ -59,12 +57,10 @@ router.get("/users", (req, res) => {
 // get particular user
 router.get("/userInfo", (req, res) => {
     let token = req.headers["x-access-token"]
-    console.log(token)
     if(!token) res.send({auth: false, token: "No token provided"});
 
     // jwt verify
     jwt.verify(token, config.secret, (err, user)=> {
-        console.log(user)
         if(err) res.send({auth: false, token: "Invalid token"})
         User.findById(user.id, (err, data) => {
             if(err) throw err

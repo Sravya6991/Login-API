@@ -1,6 +1,7 @@
-const express = require("express")
-const PORT = 5000
-const db = require("./db");
+const express = require("express");
+const mongoose = require("mongoose");
+
+const PORT = 5000;
 const AuthController = require("./controller/authController")
 
 const app = express()
@@ -11,9 +12,15 @@ app.use((req, res, next) => {
     next();
 });
 
+const db = mongoose.connect(process.env.MONGODB_URL);
+
 app.use("/auth", AuthController)
 
-app.listen(PORT, () => {
-    console.log("Server is connected")
-})
+if(db) {
+    app.listen(PORT, () => {
+        console.log("Server is connected")
+        console.log('Database is connected');
+    })
+}
+
 
